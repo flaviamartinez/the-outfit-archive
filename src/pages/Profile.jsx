@@ -1,14 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useWardrobe } from '../context/WardrobeContext';
-import { User, Upload, Check, Camera, Grid, Maximize, AlertCircle } from 'lucide-react';
+import { User, Upload, Check, Camera, Grid, Maximize, AlertCircle, Settings } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { Toast } from '../components/Toast';
+import { ManageCategoriesModal } from '../components/ManageCategoriesModal';
 
 export function Profile() {
   const { user, profile, updateProfile, logout } = useAuth();
   const { items, savedOutfits, categories } = useWardrobe();
   
+  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [username, setUsername] = useState(profile?.username || '');
   const [fullName, setFullName] = useState(profile?.full_name || '');
@@ -256,7 +258,32 @@ export function Profile() {
           </p>
         </div>
 
+        <div className="dashboard-card" style={{ backgroundColor: 'var(--card-bg)', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>
+            <Settings size={20} />
+            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 500 }}>Preferences</h3>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+              Customize how you organize your clothes. Add, edit, or delete categories here.
+            </p>
+            <button 
+              className="btn-secondary" 
+              onClick={() => setIsManageCategoriesOpen(true)}
+              style={{ width: '100%' }}
+            >
+              Manage Categories
+            </button>
+          </div>
+        </div>
+
       </div>
+
+      <ManageCategoriesModal 
+        isOpen={isManageCategoriesOpen}
+        onClose={() => setIsManageCategoriesOpen(false)}
+      />
 
       <Toast 
         message={toastMessage} 

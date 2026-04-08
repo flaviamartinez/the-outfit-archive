@@ -1,6 +1,7 @@
 import React from 'react';
+import { Search } from 'lucide-react';
 
-export function CategoryFilter({ categories = [], activeCategory, onCategoryChange }) {
+export function CategoryFilter({ categories = [], activeCategory, onCategoryChange, searchQuery, onSearchChange }) {
   const allCategories = categories;
   
   // Find current active category object
@@ -20,7 +21,27 @@ export function CategoryFilter({ categories = [], activeCategory, onCategoryChan
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '2rem' }}>
-      <div className="category-filter" style={{ marginBottom: subCategories.length > 0 ? 0 : '1rem' }}>
+      <div className="category-filter" style={{ marginBottom: subCategories.length > 0 ? 0 : '1rem', alignItems: 'center' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          <Search size={16} style={{ position: 'absolute', left: '14px', color: 'var(--text-secondary)' }} />
+          <input
+            type="text"
+            placeholder="Search your wardrobe..."
+            value={searchQuery || ''}
+            onChange={(e) => onSearchChange(e.target.value)}
+            style={{
+              padding: '0.6rem 1rem 0.6rem 2.4rem',
+              borderRadius: 'var(--radius-full)',
+              border: '1px solid var(--border-color)',
+              background: 'var(--card-bg)',
+              color: 'var(--text-primary)',
+              outline: 'none',
+              width: '260px',
+              fontSize: '0.95rem',
+              transition: 'all var(--transition-fast)'
+            }}
+          />
+        </div>
         {topLevelCategories.map((category) => (
           <button
             key={category.id}

@@ -57,10 +57,15 @@ export function ItemDetailsModal({ item, onClose }) {
           </div>
           
           <div className="item-details-info">
-            <h2 className="modal-title" style={{ marginBottom: '0.5rem' }}>{item.name}</h2>
-            <p className="item-category" style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+            <div style={{ display: 'inline-block', width: 'fit-content', backgroundColor: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
               {categories?.find(c => c.id === item.category)?.name || item.category}
-            </p>
+            </div>
+            <h2 className="modal-title" style={{ fontSize: '2.5rem', marginBottom: item.brand ? '0.2rem' : '1.5rem', lineHeight: 1.1 }}>{item.name}</h2>
+            {item.brand && (
+              <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', fontWeight: 500 }}>
+                {item.brand}
+              </p>
+            )}
             
             <div className="related-outfits-section">
               <h3 style={{ fontSize: '1.1rem', fontWeight: 500, marginBottom: '1rem' }}>

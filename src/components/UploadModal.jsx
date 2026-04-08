@@ -10,6 +10,7 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
   const topCategories = categories.filter(c => !c.parentId && c.id !== 'all');
   
   const [name, setName] = useState('');
+  const [brand, setBrand] = useState('');
   const [category, setCategory] = useState(topCategories.length > 0 ? topCategories[0].id : '');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -25,10 +26,12 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
     if (isOpen) {
       if (itemToEdit) {
         setName(itemToEdit.name || '');
+        setBrand(itemToEdit.brand || '');
         setCategory(itemToEdit.category || (topCategories.length > 0 ? topCategories[0].id : ''));
         setPreviewUrl(itemToEdit.imageUrl || null);
       } else {
         setName('');
+        setBrand('');
         setCategory(topCategories.length > 0 ? topCategories[0].id : '');
         setPreviewUrl(null);
       }
@@ -122,6 +125,7 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
       onUpload({
         id: itemToEdit ? itemToEdit.id : crypto.randomUUID(),
         name,
+        brand: brand.trim() || undefined,
         category,
         dateAdded: itemToEdit ? itemToEdit.dateAdded : new Date().toISOString(),
         imageUrl: uploadUrl
@@ -129,6 +133,7 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
       
       // Reset state and close
       setName('');
+      setBrand('');
       setCategory(categories.find(c => c.id !== 'all')?.id || '');
       setPreviewUrl(null);
       setSelectedFile(null);
@@ -220,6 +225,17 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
               onChange={(e) => setName(e.target.value)} 
               placeholder="E.g. My favorite jacket"
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="itemBrand">Brand (Optional)</label>
+            <input 
+              type="text" 
+              id="itemBrand" 
+              value={brand} 
+              onChange={(e) => setBrand(e.target.value)} 
+              placeholder="E.g. Zara, Nike"
             />
           </div>
 
