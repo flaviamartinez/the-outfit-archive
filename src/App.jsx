@@ -5,6 +5,7 @@ import { Closet } from './pages/Closet';
 import { OutfitCreator } from './pages/OutfitCreator';
 import { SavedOutfits } from './pages/SavedOutfits';
 import { Login } from './pages/Login';
+import { Profile } from './pages/Profile';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import './App.css';
 
@@ -33,6 +34,7 @@ function App() {
           } />
           <Route path="/creator" element={<OutfitCreator />} />
           <Route path="/outfits" element={<SavedOutfits />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
       </Routes>
     </div>

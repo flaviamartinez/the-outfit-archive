@@ -1,11 +1,11 @@
 import React from 'react';
 import { ItemCard } from './ItemCard';
 
-export function WardrobeGrid({ items }) {
+export function WardrobeGrid({ items, onItemClick }) {
   if (items.length === 0) {
     return (
       <div className="empty-state">
-        <p>No se encontraron prendas en esta categoría.</p>
+        <p>No items found in this category.</p>
       </div>
     );
   }
@@ -13,7 +13,7 @@ export function WardrobeGrid({ items }) {
   return (
     <div className="wardrobe-grid">
       {items.map((item) => (
-        <ItemCard key={item.id} item={item} />
+        <ItemCard key={item.id} item={item} onClick={onItemClick} />
       ))}
     </div>
   );

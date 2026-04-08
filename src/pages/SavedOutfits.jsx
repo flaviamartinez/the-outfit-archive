@@ -9,7 +9,7 @@ export function SavedOutfits() {
   if (savedOutfits.length === 0) {
     return (
       <main className="empty-state">
-        <p>Aún no has creado ningún outfit. ¡Ve al Creador para armar tu primer look!</p>
+        <p>You haven't created any outfits yet. Go to the Creator to build your first look!</p>
       </main>
     );
   }
@@ -23,22 +23,31 @@ export function SavedOutfits() {
             className="item-card outfit-card"
             onClick={() => setSelectedOutfit(outfit)}
           >
-            <div className="outfit-preview-container">
-              {/* Very simple visual preview: stack images somewhat dynamically */}
-              {outfit.items.slice(0, 4).map((item, index) => (
+            <div className="outfit-preview-container" style={{ padding: outfit.coverPhotoUrl ? 0 : '2rem' }}>
+              {outfit.coverPhotoUrl ? (
                 <img 
-                  key={item.id} 
-                  src={item.imageUrl} 
-                  alt="" 
-                  className="outfit-preview-img"
-                  style={{ 
-                    zIndex: index,
-                    transform: `translate(${index * 15}px, ${index * 10}px) rotate(${index % 2 === 0 ? 5 : -5}deg)`
-                  }}
+                  src={outfit.coverPhotoUrl} 
+                  alt={outfit.name} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} 
                 />
-              ))}
-              {outfit.items.length > 4 && (
-                <div className="outfit-more-items">+{outfit.items.length - 4}</div>
+              ) : (
+                <>
+                  {outfit.items.slice(0, 4).map((item, index) => (
+                    <img 
+                      key={item.id} 
+                      src={item.imageUrl} 
+                      alt="" 
+                      className="outfit-preview-img"
+                      style={{ 
+                        zIndex: index,
+                        transform: `translate(${index * 15}px, ${index * 10}px) rotate(${index % 2 === 0 ? 5 : -5}deg)`
+                      }}
+                    />
+                  ))}
+                  {outfit.items.length > 4 && (
+                    <div className="outfit-more-items">+{outfit.items.length - 4}</div>
+                  )}
+                </>
               )}
             </div>
             <div className="item-details outfit-details">

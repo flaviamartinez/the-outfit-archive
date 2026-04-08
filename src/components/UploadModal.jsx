@@ -1,15 +1,42 @@
-import React, { useState, useRef } from 'react';
-import { X, Image as ImageIcon } from 'lucide-react';
-import { INITIAL_CATEGORIES } from '../data/mockData';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Image as ImageIcon, Plus } from 'lucide-react';
+import { useWardrobe } from '../context/WardrobeContext';
+import { supabase } from '../supabaseClient';
+import { useAuth } from '../context/AuthContext';
 
-export function UploadModal({ isOpen, onClose, onUpload }) {
+export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
+  const { categories, addCategory } = useWardrobe();
+  const { user } = useAuth();
+  const topCategories = categories.filter(c => !c.parentId && c.id !== 'all');
+  
   const [name, setName] = useState('');
-  const [category, setCategory] = useState(INITIAL_CATEGORIES[1].id); // Default to first actual category
+  const [category, setCategory] = useState(topCategories.length > 0 ? topCategories[0].id : '');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryParent, setNewCategoryParent] = useState('');
+  
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [useMagicRemove, setUseMagicRemove] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (itemToEdit) {
+        setName(itemToEdit.name || '');
+        setCategory(itemToEdit.category || (topCategories.length > 0 ? topCategories[0].id : ''));
+        setPreviewUrl(itemToEdit.imageUrl || null);
+      } else {
+        setName('');
+        setCategory(topCategories.length > 0 ? topCategories[0].id : '');
+        setPreviewUrl(null);
+      }
+      setSelectedFile(null);
+      setUseMagicRemove(false);
+      setIsCreatingCategory(false);
+    }
+  }, [itemToEdit, isOpen]);
 
   if (!isOpen) return null;
 
@@ -64,50 +91,87 @@ export function UploadModal({ isOpen, onClose, onUpload }) {
     let finalImageUrl = previewUrl;
 
     try {
-      if (useMagicRemove && selectedFile) {
-        finalImageUrl = await processImageWithAI(selectedFile);
+      let uploadUrl = itemToEdit ? itemToEdit.imageUrl : previewUrl;
+
+      if (selectedFile) {
+        let finalImageUrl = previewUrl;
+        if (useMagicRemove) {
+          finalImageUrl = await processImageWithAI(selectedFile);
+        }
+        
+        // Subir a Supabase Storage
+        if (user && finalImageUrl) {
+          const response = await fetch(finalImageUrl);
+          const blob = await response.blob();
+          
+          const fileName = `${user.id}/${Date.now()}-${Math.floor(Math.random() * 1000)}.png`;
+          const { data, error: uploadError } = await supabase.storage
+            .from('wardrobe')
+            .upload(fileName, blob, { contentType: 'image/png' });
+            
+          if (uploadError) throw uploadError;
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('wardrobe')
+            .getPublicUrl(fileName);
+            
+          uploadUrl = publicUrl;
+        }
       }
 
       onUpload({
-        id: Date.now().toString(),
+        id: itemToEdit ? itemToEdit.id : crypto.randomUUID(),
         name,
         category,
-        dateAdded: new Date().toISOString(),
-        imageUrl: finalImageUrl
+        dateAdded: itemToEdit ? itemToEdit.dateAdded : new Date().toISOString(),
+        imageUrl: uploadUrl
       });
       
       // Reset state and close
       setName('');
-      setCategory(INITIAL_CATEGORIES[1].id);
+      setCategory(categories.find(c => c.id !== 'all')?.id || '');
       setPreviewUrl(null);
       setSelectedFile(null);
       setUseMagicRemove(false);
       onClose();
 
     } catch (error) {
-      console.error('Error procesando imagen:', error);
+      console.error('Error processing image:', error);
       if (error.message === 'MISSING_API_KEY') {
-        alert('Para usar la magia de la IA, necesitas configurar tu API Key de Remove.bg en el archivo .env.');
+        alert('To use AI magic, you need to configure your Remove.bg API Key in the .env file.');
       } else if (error.message === 'OUT_OF_CREDITS') {
-        alert('Se han agotado los créditos gratuitos de tu cuenta de Remove.bg para este mes. Por favor, desactiva la opción mágica o actualiza tu plan en Remove.bg.');
+        alert('Your free Remove.bg credits for this month have been exhausted. Please disable the magic option or upgrade your plan.');
       } else if (error.message === 'INVALID_API_KEY') {
-        alert('Tu API Key de Remove.bg parece ser inválida. Por favor, verifica tu archivo .env.');
+        alert('Your Remove.bg API Key seems invalid. Please check your .env file.');
       } else {
-        alert('Hubo un error al intentar eliminar el fondo. Inténtalo de nuevo más tarde o desactiva la opción mágica.');
+        alert('There was an error trying to remove the background. Try again later or disable the magic option.');
       }
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleCreateCategory = () => {
+    if (!newCategoryName.trim()) return;
+    const newId = newCategoryName.toLowerCase().replace(/\s+/g, '-');
+    addCategory({
+      id: newId,
+      name: newCategoryName,
+      parentId: newCategoryParent || null
+    });
+    setCategory(newId);
+    setIsCreatingCategory(false);
+    setNewCategoryName('');
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <button className="modal-close-btn" onClick={onClose} aria-label="Cerrar modal">
+        <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
           <X size={24} />
         </button>
         
-        <h2 className="modal-title">Añadir nueva prenda</h2>
+        <h2 className="modal-title">{itemToEdit ? 'Edit item' : 'Add new item'}</h2>
         
         <form onSubmit={handleSubmit} className="upload-form">
           <div 
@@ -119,8 +183,8 @@ export function UploadModal({ isOpen, onClose, onUpload }) {
             ) : (
                 <div className="upload-placeholder">
                   <ImageIcon size={48} className="upload-icon" />
-                  <p>Haz clic para subir una foto</p>
-                  <p className="upload-subtitle">JPG, PNG recomended</p>
+                  <p>Click to upload a photo</p>
+                  <p className="upload-subtitle">JPG, PNG recommended</p>
                 </div>
             )}
             <input 
@@ -142,38 +206,77 @@ export function UploadModal({ isOpen, onClose, onUpload }) {
                   onChange={(e) => setUseMagicRemove(e.target.checked)}
                   className="magic-checkbox"
                 />
-                ✨ Eliminar el fondo (Magic AI)
+                ✨ Remove background (Magic AI)
               </label>
             </div>
           )}
 
           <div className="form-group">
-            <label htmlFor="itemName">Nombre de la prenda</label>
+            <label htmlFor="itemName">Item name</label>
             <input 
               type="text" 
               id="itemName" 
               value={name} 
               onChange={(e) => setName(e.target.value)} 
-              placeholder="Ej. Mi chaqueta favorita"
+              placeholder="E.g. My favorite jacket"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="itemCategory">Categoría</label>
-            <select 
-              id="itemCategory" 
-              value={category} 
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {INITIAL_CATEGORIES.filter(c => c.id !== 'all').map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label htmlFor="itemCategory">Category</label>
+              {!isCreatingCategory && (
+                <button 
+                  type="button" 
+                  onClick={() => setIsCreatingCategory(!isCreatingCategory)}
+                  style={{ fontSize: '0.85rem', color: 'var(--accent-color)', display: 'flex', alignItems: 'center' }}
+                >
+                  <Plus size={14} style={{ marginRight: '0.2rem' }} /> New Category
+                </button>
+              )}
+            </div>
+
+            {isCreatingCategory ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
+                <input 
+                  type="text" 
+                  placeholder="Category name..." 
+                  value={newCategoryName}
+                  onChange={e => setNewCategoryName(e.target.value)}
+                  style={{ padding: '0.5rem' }}
+                />
+                <select value={newCategoryParent} onChange={e => setNewCategoryParent(e.target.value)} style={{ padding: '0.5rem' }}>
+                  <option value="">-- Main Category --</option>
+                  {topCategories.map(c => (
+                    <option key={c.id} value={c.id}>Subcategory of {c.name}</option>
+                  ))}
+                </select>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <button type="button" onClick={handleCreateCategory} className="btn-primary" style={{ padding: '0.5rem', flex: 1 }}>Create</button>
+                  <button type="button" onClick={() => setIsCreatingCategory(false)} style={{ padding: '0.5rem', flex: 1, backgroundColor: 'transparent', border: '1px solid var(--border-color)' }}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <select 
+                id="itemCategory" 
+                value={category} 
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {topCategories.map(cat => (
+                  <optgroup key={cat.id} label={cat.name}>
+                    <option value={cat.id}>General ({cat.name})</option>
+                    {categories.filter(sub => sub.parentId === cat.id).map(sub => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            )}
           </div>
 
           <button type="submit" className="btn-primary form-submit" disabled={!name || !previewUrl || isProcessing}>
-            {isProcessing ? 'Procesando Mágicamente...' : 'Guardar en Mi Clóset'}
+            {isProcessing ? 'Processing Magically...' : (itemToEdit ? 'Save Changes' : 'Save to My Closet')}
           </button>
         </form>
       </div>

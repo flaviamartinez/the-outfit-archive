@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 export function Header({ onAddClick }) {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
 
   return (
     <header className="header">
@@ -15,19 +15,19 @@ export function Header({ onAddClick }) {
             to="/" 
             className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
           >
-            Mi Clóset
+            My Closet
           </Link>
           <Link 
             to="/creator" 
             className={`nav-link ${location.pathname === '/creator' ? 'active' : ''}`}
           >
-            Creador
+            Creator
           </Link>
           <Link 
             to="/outfits" 
             className={`nav-link ${location.pathname === '/outfits' ? 'active' : ''}`}
           >
-            Mis Outfits
+            My Outfits
           </Link>
         </nav>
       </div>
@@ -35,14 +35,21 @@ export function Header({ onAddClick }) {
         {location.pathname === '/' && (
           <button className="btn-primary" onClick={onAddClick}>
             <Plus size={20} />
-            <span>Añadir Prenda</span>
+            <span>Add Item</span>
           </button>
         )}
         
         {user && (
-          <div className="user-profile">
-            <img src={user.photoURL || `https://ui-avatars.com/api/?name=${user.email}`} alt="Profile" className="user-avatar" />
-            <button className="btn-logout" onClick={logout} title="Cerrar Sesión">
+          <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <Link to="/profile" title="View Profile" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+              <img 
+                src={profile?.avatar_url || user.photoURL || `https://ui-avatars.com/api/?name=${profile?.username || user.email}`} 
+                alt="Profile" 
+                className="user-avatar" 
+                style={{ cursor: 'pointer', border: location.pathname === '/profile' ? '2px solid var(--accent-color)' : '2px solid transparent' }} 
+              />
+            </Link>
+            <button className="btn-logout" onClick={logout} title="Log Out">
               <LogOut size={20} />
             </button>
           </div>

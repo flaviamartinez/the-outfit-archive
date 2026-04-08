@@ -559,6 +559,15 @@
 
 .canvas-draggable-item {
   position: absolute;
+  outline: none !important;
+  border: none !important;
+}
+
+.canvas-draggable-item:hover,
+.canvas-draggable-item:focus,
+.canvas-draggable-item:active {
+  outline: none !important;
+  border: none !important;
 }
 
 .canvas-item-content {
@@ -882,4 +891,95 @@
   border-radius: var(--radius-sm);
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
+}
+
+/* --- Item Details Modal --- */
+.item-details-modal {
+  max-width: 800px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.item-details-layout {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .item-details-layout {
+    flex-direction: row;
+    height: 500px;
+  }
+}
+
+.item-details-image {
+  flex: 1;
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.item-details-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.item-details-info {
+  flex: 1;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.related-outfit-thumb {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.delete-confirm-box {
+  background-color: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.delete-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: #ef4444;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.delete-actions-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-color);
 }
