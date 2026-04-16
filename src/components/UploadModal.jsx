@@ -211,7 +211,7 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
                   onChange={(e) => setUseMagicRemove(e.target.checked)}
                   className="magic-checkbox"
                 />
-                ✨ Remove background (Magic AI)
+                Remove background
               </label>
             </div>
           )}

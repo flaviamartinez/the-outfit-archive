@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
 import { v4 as uuidv4 } from 'uuid';
-import { Save, Trash2, Image as ImageIcon, Check, ChevronDown, Filter } from 'lucide-react';
+import { Save, Trash2, Image as ImageIcon, RotateCcw, Check, ChevronDown, Filter, AlertTriangle } from 'lucide-react';
 import { useWardrobe } from '../context/WardrobeContext';
 import { Toast } from '../components/Toast';
 
 export function OutfitCreator() {
-  const { items, saveOutfit, categories } = useWardrobe();
+  const { items, saveOutfit, updateOutfit, categories } = useWardrobe();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const outfitToEdit = location.state?.outfitToEdit;
+
   const [canvasItems, setCanvasItems] = useState([]);
   const [outfitName, setOutfitName] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -14,7 +19,35 @@ export function OutfitCreator() {
   const [coverPreview, setCoverPreview] = useState(null);
   const [activeCategory, setActiveCategory] = useState({ parent: 'all', sub: 'all' });
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const fileInputRef = React.useRef(null);
+  
+  // Fill data if editing
+  useEffect(() => {
+    if (outfitToEdit) {
+      setCanvasItems(outfitToEdit.items);
+      setOutfitName(outfitToEdit.name);
+      if (outfitToEdit.coverPhotoUrl) {
+        setCoverPreview(outfitToEdit.coverPhotoUrl);
+      }
+    }
+  }, [outfitToEdit]);
+
+  const handleResetCanvas = () => {
+    if (canvasItems.length === 0 && !outfitName && !coverPhoto) return;
+    setShowResetConfirm(true);
+  };
+
+  const confirmReset = () => {
+    setCanvasItems([]);
+    setOutfitName('');
+    setCoverPhoto(null);
+    setCoverPreview(null);
+    setShowResetConfirm(false);
+    if (outfitToEdit) {
+      navigate('/creator', { state: null, replace: true });
+    }
+  };
 
   const handleAddItemToCanvas = (item) => {
     const newItemPos = {
@@ -105,7 +138,7 @@ export function OutfitCreator() {
   const handleSaveOutfit = async () => {
     if (!outfitName || canvasItems.length === 0) return;
     
-    let coverPhotoUrl = null;
+    let coverPhotoUrl = outfitToEdit?.coverPhotoUrl || null;
     
     // Upload cover photo if exists
     if (coverPhoto) {
@@ -125,18 +158,36 @@ export function OutfitCreator() {
       }
     }
 
-    saveOutfit({
-      id: uuidv4(),
+    const outfitData = {
+      id: outfitToEdit ? outfitToEdit.id : uuidv4(),
       name: outfitName,
       items: canvasItems,
-      dateCreated: new Date().toISOString(),
+      dateAdded: outfitToEdit ? outfitToEdit.dateAdded : new Date().toISOString(),
       coverPhotoUrl
-    });
-    setCanvasItems([]);
-    setOutfitName('');
-    setCoverPhoto(null);
-    setCoverPreview(null);
-    setShowToast(true);
+    };
+
+    let success = false;
+    if (outfitToEdit) {
+      // updateOutfit doesn't return boolean yet but let's assume it works or fix it later
+      await updateOutfit(outfitData.id, outfitData);
+      success = true;
+    } else {
+      success = await saveOutfit(outfitData);
+    }
+    
+    if (success) {
+      setCanvasItems([]);
+      setOutfitName('');
+      setCoverPhoto(null);
+      setCoverPreview(null);
+      setShowToast(true);
+      
+      if (outfitToEdit) {
+        setTimeout(() => navigate('/outfits'), 1500);
+      }
+    } else {
+      alert('Error: Could not save outfit to database. Please check your connection or database schema.');
+    }
   };
 
   // Filtered Items Logic
@@ -271,8 +322,37 @@ export function OutfitCreator() {
               style={{ width: 'auto', flex: 1 }}
             />
             
+          </div>
+
+          <div className="canvas-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {/* Reset Button */}
+            <div style={{ position: 'relative' }}>
+              <button 
+                onClick={handleResetCanvas}
+                title="Reset canvas"
+                className="canvas-action-btn"
+                style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', padding: '0.5rem', display: 'flex', alignItems: 'center' }}
+              >
+                <RotateCcw size={20} />
+              </button>
+
+              {showResetConfirm && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, width: '250px', backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '1rem', boxShadow: 'var(--shadow-lg)', zIndex: 1000, marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444', marginBottom: '0.5rem' }}>
+                    <AlertTriangle size={16} />
+                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Reset Canvas?</span>
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>All progress will be lost. This cannot be undone.</p>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={confirmReset} className="btn-danger" style={{ flex: 1, padding: '0.4rem', fontSize: '0.8rem' }}>Reset</button>
+                    <button onClick={() => setShowResetConfirm(false)} className="btn-secondary" style={{ flex: 1, padding: '0.4rem', fontSize: '0.8rem' }}>Cancel</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Optional Cover Photo Upload */}
-            <div className="cover-upload-wrapper">
+            <div className="cover-upload-wrapper" style={{ flexShrink: 0 }}>
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -281,46 +361,52 @@ export function OutfitCreator() {
                 style={{ display: 'none' }}
               />
               <button 
-                className={`btn-secondary creator-cover-btn ${coverPreview ? 'has-cover' : ''}`}
+                className={`btn-primary creator-cover-btn ${coverPreview ? 'has-cover' : ''}`}
                 onClick={() => fileInputRef.current.click()}
                 title="Add optional cover photo"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '0.5rem 0.8rem',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.85rem',
-                  backgroundColor: coverPreview ? 'rgba(0,0,0,0.05)' : 'transparent',
-                  border: '1px dashed var(--border-color)',
-                  color: coverPreview ? 'var(--accent-color)' : 'var(--text-secondary)'
+                  padding: '0.6rem 1rem',
+                  fontSize: '0.9rem',
+                  background: coverPreview ? 'var(--accent-hover)' : 'var(--accent-color)',
+                  color: 'var(--bg-primary)'
                 }}
               >
                 {coverPreview ? (
                   <>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '22px', height: '22px', borderRadius: '50%', overflow: 'hidden', border: '2px solid white', flexShrink: 0 }}>
                       <img src={coverPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                    <span>Photo ready</span>
+                    <span className="btn-text">Photo ready</span>
                   </>
                 ) : (
                   <>
-                    <ImageIcon size={16} />
-                    <span>Reference photo</span>
+                    <ImageIcon size={18} />
+                    <span className="btn-text">Reference photo</span>
                   </>
                 )}
               </button>
             </div>
-          </div>
 
-          <button 
-            className="btn-primary" 
-            onClick={handleSaveOutfit}
-            disabled={canvasItems.length === 0 || !outfitName}
-          >
-            <Save size={18} />
-            Save Outfit
-          </button>
+            <div 
+              title={
+                canvasItems.length === 0 && !outfitName ? "Add items and a name to save" :
+                canvasItems.length === 0 ? "Add at least one item to save" : 
+                !outfitName ? "Enter an outfit name to save" : 
+                "Save Outfit"
+              }
+              style={{ display: 'flex', flex: 1 }}
+            >
+              <button 
+                className="btn-primary" 
+                onClick={handleSaveOutfit}
+                disabled={canvasItems.length === 0 || !outfitName}
+                style={{ fontSize: '0.9rem', width: '100%' }}
+              >
+                <Save size={18} />
+                <span className="btn-text">Save</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div 

@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
-import { X, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Trash2, ChevronLeft, ChevronRight, Edit2, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useWardrobe } from '../context/WardrobeContext';
 import { ItemDetailsModal } from './ItemDetailsModal';
 
 export function OutfitViewer({ isOpen, outfit, onClose, onDelete }) {
+  const navigate = useNavigate();
   const { items } = useWardrobe();
   const [selectedItemToView, setSelectedItemToView] = useState(null);
   const [viewMode, setViewMode] = useState('cover'); // 'cover' or 'canvas'
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (!isOpen || !outfit) return null;
+
+  const handleEdit = () => {
+    navigate('/creator', { state: { outfitToEdit: outfit } });
+    onClose();
+  };
 
   const hasCover = !!outfit.coverPhotoUrl;
   const currentMode = hasCover ? viewMode : 'canvas';
@@ -25,23 +33,61 @@ export function OutfitViewer({ isOpen, outfit, onClose, onDelete }) {
             <div>
               <h2 className="modal-title viewer-title">{outfit.name}</h2>
               <p className="viewer-date" style={{ marginBottom: 0 }}>
-                {new Date(outfit.dateCreated).toLocaleDateString()}
+                {new Date(outfit.dateAdded).toLocaleDateString()}
               </p>
             </div>
-            <button 
-              className="btn-danger" 
-              onClick={() => {
-                if (window.confirm('Are you sure you want to delete this outfit?')) {
-                  onDelete(outfit.id);
-                  onClose();
-                }
-              }}
-              title="Delete Outfit"
-              style={{ height: 'fit-content' }}
-            >
-              <Trash2 size={18} />
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                className="btn-secondary" 
+                onClick={handleEdit}
+                title="Edit Outfit"
+                style={{ height: 'fit-content', padding: '0.5rem 0.8rem' }}
+              >
+                <Edit2 size={18} />
+                <span style={{ fontSize: '0.9rem', marginLeft: '0.3rem' }}>Edit</span>
+              </button>
+              <button 
+                className="btn-danger" 
+                onClick={() => setShowDeleteConfirm(true)}
+                title="Delete Outfit"
+                style={{ height: 'fit-content', padding: '0.5rem 0.8rem' }}
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
           </div>
+
+          {showDeleteConfirm && (
+            <div className="delete-confirm-overlay" style={{ marginTop: '1rem', padding: '1.25rem', backgroundColor: 'rgba(239, 68, 68, 0.05)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#ef4444', marginBottom: '1rem' }}>
+                <AlertTriangle size={20} />
+                <h4 style={{ margin: 0, fontWeight: 600 }}>Delete this outfit?</h4>
+              </div>
+              <p style={{ margin: '0 0 1.25rem 0', fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                This action cannot be undone. Are you sure you want to remove this look from your collection?
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button 
+                  className="btn-danger" 
+                  style={{ flex: 1, padding: '0.75rem' }}
+                  onClick={() => {
+                    onDelete(outfit.id);
+                    onClose();
+                    setShowDeleteConfirm(false);
+                  }}
+                >
+                  Yes, Delete
+                </button>
+                <button 
+                  className="btn-secondary" 
+                  style={{ flex: 1, padding: '0.75rem' }}
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
           
           <div className="viewer-display-area" style={{ position: 'relative', flex: 1, minHeight: '350px', display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
             

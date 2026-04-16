@@ -1,7 +1,7 @@
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 
-export function CategoryFilter({ categories = [], activeCategory, onCategoryChange, searchQuery, onSearchChange }) {
+export function CategoryFilter({ categories = [], activeCategory, onCategoryChange, searchQuery, onSearchChange, onAddClick }) {
   const allCategories = categories;
   
   // Find current active category object
@@ -20,37 +20,54 @@ export function CategoryFilter({ categories = [], activeCategory, onCategoryChan
   const subCategories = allCategories.filter(c => c.parentId === activeParentId);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '2rem' }}>
-      <div className="category-filter" style={{ marginBottom: subCategories.length > 0 ? 0 : '1rem', alignItems: 'center' }}>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          <Search size={16} style={{ position: 'absolute', left: '14px', color: 'var(--text-secondary)' }} />
-          <input
-            type="text"
-            placeholder="Search your wardrobe..."
-            value={searchQuery || ''}
-            onChange={(e) => onSearchChange(e.target.value)}
-            style={{
-              padding: '0.6rem 1rem 0.6rem 2.4rem',
-              borderRadius: 'var(--radius-full)',
-              border: '1px solid var(--border-color)',
-              background: 'var(--card-bg)',
-              color: 'var(--text-primary)',
-              outline: 'none',
-              width: '260px',
-              fontSize: '0.95rem',
-              transition: 'all var(--transition-fast)'
-            }}
-          />
+    <div className="category-filter-container" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '2rem' }}>
+      <div className="category-top-row">
+        <div className="category-filter" style={{ flex: 1, margin: 0, alignItems: 'center' }}>
+          {topLevelCategories.map((category) => (
+            <button
+              key={category.id}
+              className={`category-tab ${activeParentId === category.id ? 'active' : ''}`}
+              onClick={() => onCategoryChange(category.id)}
+            >
+              {category.name}
+            </button>
+          ))}
         </div>
-        {topLevelCategories.map((category) => (
-          <button
-            key={category.id}
-            className={`category-tab ${activeParentId === category.id ? 'active' : ''}`}
-            onClick={() => onCategoryChange(category.id)}
-          >
-            {category.name}
-          </button>
-        ))}
+
+        <div className="search-add-container" style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
+          <div className="search-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Search size={16} style={{ position: 'absolute', left: '14px', color: 'var(--text-secondary)' }} />
+            <input
+              type="text"
+              placeholder="Search your wardrobe..."
+              value={searchQuery || ''}
+              onChange={(e) => onSearchChange(e.target.value)}
+              style={{
+                padding: '0.6rem 1rem 0.6rem 2.4rem',
+                borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--border-color)',
+                background: 'var(--card-bg)',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                fontSize: '0.95rem',
+                transition: 'all var(--transition-fast)',
+                width: '100%',
+                maxWidth: '240px'
+              }}
+            />
+          </div>
+          
+          {onAddClick && (
+            <button 
+              className="btn-primary" 
+              onClick={onAddClick}
+              style={{ padding: '0 1rem', borderRadius: 'var(--radius-full)', whiteSpace: 'nowrap' }}
+            >
+              <Plus size={20} />
+              <span className="add-btn-text">Add Item</span>
+            </button>
+          )}
+        </div>
       </div>
       
       {subCategories.length > 0 && activeParentId !== 'all' && (

@@ -30,6 +30,7 @@ function App() {
             <Closet 
               isUploadModalOpen={isUploadModalOpen} 
               onCloseModal={handleCloseModal} 
+              onAddClick={handleAddClick}
             />
           } />
           <Route path="/creator" element={<OutfitCreator />} />

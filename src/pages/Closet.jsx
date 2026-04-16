@@ -6,7 +6,7 @@ import { INITIAL_CATEGORIES } from '../data/mockData';
 import { useWardrobe } from '../context/WardrobeContext';
 import { ItemDetailsModal } from '../components/ItemDetailsModal';
 
-export function Closet({ isUploadModalOpen, onCloseModal }) {
+export function Closet({ isUploadModalOpen, onCloseModal, onAddClick }) {
   const { items, addItem, categories } = useWardrobe();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,14 +40,15 @@ export function Closet({ isUploadModalOpen, onCloseModal }) {
 
   return (
     <main>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-        <div style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
+        <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
           <CategoryFilter 
             categories={categories}
             activeCategory={activeCategory}
             onCategoryChange={setActiveCategory}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            onAddClick={onAddClick}
           />
         </div>
       </div>

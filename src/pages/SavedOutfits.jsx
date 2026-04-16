@@ -53,7 +53,7 @@ export function SavedOutfits() {
             <div className="item-details outfit-details">
               <h3 className="item-name">{outfit.name}</h3>
               <p className="item-category">
-                {new Date(outfit.dateCreated).toLocaleDateString()}
+                {new Date(outfit.dateAdded).toLocaleDateString()}
               </p>
             </div>
           </div>

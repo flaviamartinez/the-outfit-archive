@@ -63,18 +63,36 @@ export function WardrobeProvider({ children }) {
         }
 
         // Fetch Outfits
-        const { data: outfitsData } = await supabase
+        const { data: outfitsData, error: outfitsError } = await supabase
           .from('outfits')
           .select('*')
           .eq('user_id', user.id)
           .order('date_created', { ascending: false });
 
-        if (outfitsData) {
+        if (outfitsError) {
+          console.error('Error fetching outfits (Retrying with created_at):', outfitsError);
+          // Fallback check
+          const { data: retryData } = await supabase
+            .from('outfits')
+            .select('*')
+            .eq('user_id', user.id);
+          
+          if (retryData) {
+            setSavedOutfits(retryData.map(out => ({
+              id: out.id,
+              name: out.name,
+              items: out.items,
+              dateAdded: out.date_added || out.created_at || out.date_created,
+              coverPhotoUrl: out.cover_photo_url
+            })));
+          }
+        } else if (outfitsData) {
+          console.log('Outfits loaded from DB:', outfitsData.length);
           setSavedOutfits(outfitsData.map(out => ({
             id: out.id,
             name: out.name,
             items: out.items,
-            dateCreated: out.date_created,
+            dateAdded: out.date_created,
             coverPhotoUrl: out.cover_photo_url
           })));
         }
@@ -156,23 +174,56 @@ export function WardrobeProvider({ children }) {
 
   // Outfits
   const saveOutfit = async (outfit) => {
-    setSavedOutfits(prev => [outfit, ...prev]);
+    // We'll update state after a success to be sure
     if (user) {
-      await supabase.from('outfits').insert({
+      console.log('Saving outfit to DB...');
+      const { error } = await supabase.from('outfits').insert({
         id: outfit.id,
         user_id: user.id,
         name: outfit.name,
         items: outfit.items,
-        date_created: outfit.dateCreated,
+        date_created: outfit.dateAdded,
         cover_photo_url: outfit.coverPhotoUrl
       });
+      
+      if (error) {
+        console.error('Error saving outfit to Supabase:', error);
+        // Try without date_added if it failed (let DB handle it)
+        const { error: retryError } = await supabase.from('outfits').insert({
+          id: outfit.id,
+          user_id: user.id,
+          name: outfit.name,
+          items: outfit.items,
+          cover_photo_url: outfit.coverPhotoUrl
+        });
+        if (retryError) {
+          console.error('Second attempt also failed:', retryError);
+          return false;
+        }
+      }
+      
+      setSavedOutfits(prev => [outfit, ...prev]);
+      return true;
     }
+    return false;
   };
 
   const deleteOutfit = async (id) => {
     setSavedOutfits(prev => prev.filter(outfit => outfit.id !== id));
     if (user) {
       await supabase.from('outfits').delete().eq('id', id).eq('user_id', user.id);
+    }
+  };
+
+  const updateOutfit = async (id, updatedOutfit) => {
+    setSavedOutfits(prev => prev.map(outfit => outfit.id === id ? { ...outfit, ...updatedOutfit } : outfit));
+    if (user) {
+      const { error } = await supabase.from('outfits').update({
+        name: updatedOutfit.name,
+        items: updatedOutfit.items,
+        cover_photo_url: updatedOutfit.coverPhotoUrl
+      }).eq('id', id).eq('user_id', user.id);
+      if (error) console.error('Error updating outfit in Supabase:', error);
     }
   };
   
@@ -210,7 +261,7 @@ export function WardrobeProvider({ children }) {
   return (
     <WardrobeContext.Provider value={{ 
       items, addItem, deleteItem, updateItem, setItems,
-      savedOutfits, saveOutfit, deleteOutfit,
+      savedOutfits, saveOutfit, deleteOutfit, updateOutfit,
       categories, addCategory, updateCategory, deleteCategory,
       isDataLoaded
     }}>

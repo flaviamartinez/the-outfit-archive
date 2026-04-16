@@ -3,32 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export function Login() {
-  const { loginWithEmail, signUpWithEmail } = useAuth();
-  const navigate = useNavigate();
+  const { loginWithGoogle } = useAuth();
   const [error, setError] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleGoogleLogin = async () => {
     setError('');
     setIsLoading(true);
     
     try {
-      if (isSignUp) {
-        await signUpWithEmail(email, password);
-        // Supabase might require email confirmation depending on settings
-        alert('Account created. If Supabase requires confirmation, check your email. Otherwise, try logging in.');
-        setIsSignUp(false);
-      } else {
-        await loginWithEmail(email, password);
-        navigate('/');
-      }
+      await loginWithGoogle();
     } catch (err) {
-      setError(err.message || 'An error occurred while processing the request.');
+      setError(err.message || 'An error occurred during login.');
     } finally {
       setIsLoading(false);
     }
@@ -42,39 +28,26 @@ export function Login() {
         
         {error && <div className="login-error">{error}</div>}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-          <input 
-            type="email" 
-            placeholder="Email address" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-          />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-          />
-          
-          <button type="submit" className="btn-primary" disabled={isLoading} style={{ padding: '0.75rem', marginTop: '0.5rem' }}>
-            {isLoading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Log In')}
-          </button>
-        </form>
-
-        <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          {isSignUp ? 'Already have an account?' : `Don't have an account?`}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', marginTop: '1.5rem' }}>
           <button 
-            onClick={() => setIsSignUp(!isSignUp)} 
-            style={{ background: 'none', border: 'none', color: 'var(--accent-color)', marginLeft: '0.5rem', cursor: 'pointer', fontWeight: 500 }}
+            onClick={handleGoogleLogin} 
+            className="btn-primary" 
+            disabled={isLoading} 
+            style={{ padding: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontWeight: '500' }}
           >
-            {isSignUp ? 'Log in here' : 'Create one here'}
+            {isLoading ? 'Loading...' : (
+              <>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+              </>
+            )}
           </button>
-        </p>
-
+        </div>
       </div>
     </div>
   );
