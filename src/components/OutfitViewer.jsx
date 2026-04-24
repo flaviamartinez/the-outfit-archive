@@ -30,12 +30,6 @@ export function OutfitViewer({ isOpen, outfit, onClose, onDelete }) {
           </button>
 
           <div className="viewer-header">
-            <div>
-              <h2 className="modal-title viewer-title">{outfit.name}</h2>
-              <p className="viewer-date" style={{ marginBottom: 0 }}>
-                {new Date(outfit.dateAdded).toLocaleDateString()}
-              </p>
-            </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button 
                 className="btn-secondary" 
@@ -58,7 +52,7 @@ export function OutfitViewer({ isOpen, outfit, onClose, onDelete }) {
           </div>
 
           {showDeleteConfirm && (
-            <div className="delete-confirm-overlay" style={{ marginTop: '1rem', padding: '1.25rem', backgroundColor: 'rgba(239, 68, 68, 0.05)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+            <div className="delete-confirm-overlay" style={{ marginTop: '0.75rem', padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.05)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#ef4444', marginBottom: '1rem' }}>
                 <AlertTriangle size={20} />
                 <h4 style={{ margin: 0, fontWeight: 600 }}>Delete this outfit?</h4>
@@ -89,14 +83,14 @@ export function OutfitViewer({ isOpen, outfit, onClose, onDelete }) {
             </div>
           )}
           
-          <div className="viewer-display-area" style={{ position: 'relative', flex: 1, minHeight: '350px', display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+          <div className="viewer-display-area" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.75rem' }}>
             
-            <div className="viewer-main-content" style={{ position: 'relative', flex: 1, backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+            <div className="viewer-main-content" style={{ position: 'relative', width: '100%', aspectRatio: '1', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
               
               {/* Cover View */}
               {hasCover && currentMode === 'cover' && (
                 <div className="viewer-cover-full" style={{ width: '100%', height: '100%' }}>
-                  <img src={outfit.coverPhotoUrl} alt={outfit.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  <img src={outfit.coverPhotoUrl} alt="Outfit cover" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
               )}
 
@@ -156,8 +150,8 @@ export function OutfitViewer({ isOpen, outfit, onClose, onDelete }) {
             )}
           </div>
 
-          <div className="viewer-pieces" style={{ marginTop: '1rem' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 500, marginBottom: '0.75rem' }}>Items ({outfit.items.length})</h3>
+          <div className="viewer-pieces" style={{ marginTop: '0.5rem' }}>
+            <h3 style={{ fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Items ({outfit.items.length})</h3>
             <div className="viewer-pieces-grid">
               {outfit.items.map(item => {
                 const fullItem = items.find(i => i.id === item.wardrobeItemId);

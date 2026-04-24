@@ -13,7 +13,6 @@ export function OutfitCreator() {
   const outfitToEdit = location.state?.outfitToEdit;
 
   const [canvasItems, setCanvasItems] = useState([]);
-  const [outfitName, setOutfitName] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [coverPhoto, setCoverPhoto] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
@@ -26,7 +25,6 @@ export function OutfitCreator() {
   useEffect(() => {
     if (outfitToEdit) {
       setCanvasItems(outfitToEdit.items);
-      setOutfitName(outfitToEdit.name);
       if (outfitToEdit.coverPhotoUrl) {
         setCoverPreview(outfitToEdit.coverPhotoUrl);
       }
@@ -34,13 +32,12 @@ export function OutfitCreator() {
   }, [outfitToEdit]);
 
   const handleResetCanvas = () => {
-    if (canvasItems.length === 0 && !outfitName && !coverPhoto) return;
+    if (canvasItems.length === 0 && !coverPhoto) return;
     setShowResetConfirm(true);
   };
 
   const confirmReset = () => {
     setCanvasItems([]);
-    setOutfitName('');
     setCoverPhoto(null);
     setCoverPreview(null);
     setShowResetConfirm(false);
@@ -136,7 +133,7 @@ export function OutfitCreator() {
   };
 
   const handleSaveOutfit = async () => {
-    if (!outfitName || canvasItems.length === 0) return;
+    if (canvasItems.length === 0) return;
     
     let coverPhotoUrl = outfitToEdit?.coverPhotoUrl || null;
     
@@ -160,7 +157,7 @@ export function OutfitCreator() {
 
     const outfitData = {
       id: outfitToEdit ? outfitToEdit.id : uuidv4(),
-      name: outfitName,
+      name: '',
       items: canvasItems,
       dateAdded: outfitToEdit ? outfitToEdit.dateAdded : new Date().toISOString(),
       coverPhotoUrl
@@ -177,7 +174,6 @@ export function OutfitCreator() {
     
     if (success) {
       setCanvasItems([]);
-      setOutfitName('');
       setCoverPhoto(null);
       setCoverPreview(null);
       setShowToast(true);
@@ -313,15 +309,7 @@ export function OutfitCreator() {
       <section className="creator-workspace">
         <div className="canvas-header">
           <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '1rem' }}>
-            <input 
-              type="text" 
-              placeholder="Outfit name..." 
-              className="outfit-name-input"
-              value={outfitName}
-              onChange={(e) => setOutfitName(e.target.value)}
-              style={{ width: 'auto', flex: 1 }}
-            />
-            
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 500, color: 'var(--text-primary)' }}>New Outfit</h3>
           </div>
 
           <div className="canvas-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -389,9 +377,7 @@ export function OutfitCreator() {
 
             <div 
               title={
-                canvasItems.length === 0 && !outfitName ? "Add items and a name to save" :
                 canvasItems.length === 0 ? "Add at least one item to save" : 
-                !outfitName ? "Enter an outfit name to save" : 
                 "Save Outfit"
               }
               style={{ display: 'flex', flex: 1 }}
@@ -399,7 +385,7 @@ export function OutfitCreator() {
               <button 
                 className="btn-primary" 
                 onClick={handleSaveOutfit}
-                disabled={canvasItems.length === 0 || !outfitName}
+                disabled={canvasItems.length === 0}
                 style={{ fontSize: '0.9rem', width: '100%' }}
               >
                 <Save size={18} />

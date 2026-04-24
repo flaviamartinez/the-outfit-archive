@@ -53,64 +53,67 @@ export function ItemDetailsModal({ item, onClose }) {
         
         <div className="item-details-layout">
           <div className="item-details-image">
-            <img src={item.imageUrl} alt={item.name} />
+            <img src={item.imageUrl} alt={categories?.find(c => c.id === item.category)?.name || item.category} />
           </div>
           
-          <div className="item-details-info">
-            <div style={{ display: 'inline-block', width: 'fit-content', backgroundColor: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-              {categories?.find(c => c.id === item.category)?.name || item.category}
-            </div>
-            <h2 className="modal-title" style={{ fontSize: '2.5rem', marginBottom: item.brand ? '0.2rem' : '1.5rem', lineHeight: 1.1 }}>{item.name}</h2>
-            {item.brand && (
-              <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', fontWeight: 500 }}>
-                {item.brand}
-              </p>
-            )}
-            
-            <div className="related-outfits-section">
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 500, marginBottom: '1rem' }}>
-                Used in {relatedOutfits.length} outfit{relatedOutfits.length !== 1 ? 's' : ''}
-              </h3>
-              
-              {relatedOutfits.length > 0 ? (
-                <div className="viewer-pieces-grid">
-                  {relatedOutfits.map(outfit => (
-                    <div 
-                      key={outfit.id} 
-                      className="related-outfit-thumb" 
-                      title={outfit.name} 
-                      onClick={() => setSelectedOutfitToView(outfit)}
-                      style={{ cursor: 'pointer', position: 'relative' }}
-                    >
-                      <div className="outfit-preview-container" style={{ padding: 0 }}>
-                        {outfit.items.slice(0, 4).map((item, index) => (
-                          <img 
-                            key={item.id} 
-                            src={item.imageUrl} 
-                            alt="" 
-                            className="outfit-preview-img"
-                            style={{ 
-                              position: 'absolute',
-                              width: '45%',
-                              height: '60%',
-                              objectFit: 'cover',
-                              zIndex: index,
-                              transform: `translate(${index * 12 - 18}px, ${index * 8 - 12}px) rotate(${index % 2 === 0 ? 5 : -5}deg)`
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                  This item hasn't been used in any saved outfit yet.
+          <div className="item-details-info" style={{ alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+              <div style={{ display: 'inline-block', backgroundColor: 'var(--bg-secondary)', padding: '0.5rem 1.2rem', borderRadius: 'var(--radius-full)', fontSize: '1rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                {categories?.find(c => c.id === item.category)?.name || item.category}
+              </div>
+              {item.brand && (
+                <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                  {item.brand}
                 </p>
               )}
             </div>
+            
+            <div className="related-outfits-section" style={{ width: '100%', marginTop: '1.5rem' }}>
+              {relatedOutfits.length > 0 ? (
+                <>
+                  <h3 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
+                    Used in {relatedOutfits.length} outfit{relatedOutfits.length !== 1 ? 's' : ''}
+                  </h3>
+                  <div className="viewer-pieces-grid" style={{ justifyContent: 'center' }}>
+                    {relatedOutfits.map(outfit => (
+                      <div 
+                        key={outfit.id} 
+                        className="related-outfit-thumb" 
+                        title={new Date(outfit.dateAdded).toLocaleDateString()} 
+                        onClick={() => setSelectedOutfitToView(outfit)}
+                        style={{ cursor: 'pointer', position: 'relative' }}
+                      >
+                        <div className="outfit-preview-container" style={{ padding: 0 }}>
+                          {outfit.items.slice(0, 4).map((item, index) => (
+                            <img 
+                              key={item.id} 
+                              src={item.imageUrl} 
+                              alt="" 
+                              className="outfit-preview-img"
+                              style={{ 
+                                position: 'absolute',
+                                width: '45%',
+                                height: '60%',
+                                objectFit: 'cover',
+                                zIndex: index,
+                                transform: `translate(${index * 12 - 18}px, ${index * 8 - 12}px) rotate(${index % 2 === 0 ? 5 : -5}deg)`
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div style={{ padding: '1.5rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border-color)' }}>
+                  <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Fresh in your closet!</p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>You can use this item to build new looks in the Outfit Creator.</p>
+                </div>
+              )}
+            </div>
 
-            <div style={{ marginTop: 'auto', paddingTop: '2rem' }}>
+            <div style={{ paddingTop: '2rem', width: '100%' }}>
               {showConfirm ? (
                 <div className="delete-confirm-box">
                   <div className="delete-warning">

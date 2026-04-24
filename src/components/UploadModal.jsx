@@ -9,7 +9,6 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
   const { user } = useAuth();
   const topCategories = categories.filter(c => !c.parentId && c.id !== 'all');
   
-  const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
   const [category, setCategory] = useState(topCategories.length > 0 ? topCategories[0].id : '');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
@@ -25,12 +24,10 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
   useEffect(() => {
     if (isOpen) {
       if (itemToEdit) {
-        setName(itemToEdit.name || '');
         setBrand(itemToEdit.brand || '');
         setCategory(itemToEdit.category || (topCategories.length > 0 ? topCategories[0].id : ''));
         setPreviewUrl(itemToEdit.imageUrl || null);
       } else {
-        setName('');
         setBrand('');
         setCategory(topCategories.length > 0 ? topCategories[0].id : '');
         setPreviewUrl(null);
@@ -88,7 +85,7 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || (!previewUrl) || isProcessing) return;
+    if ((!previewUrl) || isProcessing) return;
     
     setIsProcessing(true);
     let finalImageUrl = previewUrl;
@@ -124,7 +121,7 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
 
       onUpload({
         id: itemToEdit ? itemToEdit.id : crypto.randomUUID(),
-        name,
+        name: '',
         brand: brand.trim() || undefined,
         category,
         dateAdded: itemToEdit ? itemToEdit.dateAdded : new Date().toISOString(),
@@ -132,7 +129,6 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
       });
       
       // Reset state and close
-      setName('');
       setBrand('');
       setCategory(categories.find(c => c.id !== 'all')?.id || '');
       setPreviewUrl(null);
@@ -217,18 +213,6 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
           )}
 
           <div className="form-group">
-            <label htmlFor="itemName">Item name</label>
-            <input 
-              type="text" 
-              id="itemName" 
-              value={name} 
-              onChange={(e) => setName(e.target.value)} 
-              placeholder="E.g. My favorite jacket"
-              required
-            />
-          </div>
-
-          <div className="form-group">
             <label htmlFor="itemBrand">Brand (Optional)</label>
             <input 
               type="text" 
@@ -291,7 +275,7 @@ export function UploadModal({ isOpen, onClose, onUpload, itemToEdit = null }) {
             )}
           </div>
 
-          <button type="submit" className="btn-primary form-submit" disabled={!name || !previewUrl || isProcessing}>
+          <button type="submit" className="btn-primary form-submit" disabled={!previewUrl || isProcessing}>
             {isProcessing ? 'Processing Magically...' : (itemToEdit ? 'Save Changes' : 'Save to My Closet')}
           </button>
         </form>

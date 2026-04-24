@@ -27,7 +27,7 @@ export function SavedOutfits() {
               {outfit.coverPhotoUrl ? (
                 <img 
                   src={outfit.coverPhotoUrl} 
-                  alt={outfit.name} 
+                  alt="Outfit cover" 
                   style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} 
                 />
               ) : (
@@ -51,10 +51,7 @@ export function SavedOutfits() {
               )}
             </div>
             <div className="item-details outfit-details">
-              <h3 className="item-name">{outfit.name}</h3>
-              <p className="item-category">
-                {new Date(outfit.dateAdded).toLocaleDateString()}
-              </p>
+              <h3 className="item-name">{new Date(outfit.dateAdded).toLocaleDateString()}</h3>
             </div>
           </div>
         ))}

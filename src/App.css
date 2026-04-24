@@ -242,7 +242,7 @@
 }
 
 .item-image-wrapper {
-  aspect-ratio: 3/4;
+  aspect-ratio: 1;
   overflow: hidden;
   background-color: var(--bg-secondary);
 }
@@ -259,21 +259,7 @@
 }
 
 .item-details {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 1.5rem 1rem 1rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);
-  color: #fff; /* Always white regardless of theme because of dark gradient */
-  transform: translateY(10px);
-  opacity: 0;
-  transition: all var(--transition-normal);
-}
-
-.item-card:hover .item-details {
-  transform: translateY(0);
-  opacity: 1;
+  display: none;
 }
 
 .item-name {
@@ -493,13 +479,15 @@
 /* --- Outfit Creator Styling --- */
 .creator-container {
   display: flex;
-  height: calc(100vh - 120px); /* Fill remaining space below header */
+  align-items: flex-start;
   gap: 1.5rem;
-  margin-top: -1rem; /* Adjusting for app-container padding */
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .creator-sidebar {
-  width: 280px;
+  width: 240px;
+  flex-shrink: 0;
   background-color: var(--card-bg);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -507,6 +495,7 @@
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
+  max-height: 80vh;
   overflow: hidden;
 }
 
@@ -535,7 +524,7 @@
 }
 
 .sidebar-item {
-  aspect-ratio: 3/4;
+  aspect-ratio: 1;
   border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: grab;
@@ -552,6 +541,7 @@
 
 .creator-workspace {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-secondary);
@@ -585,7 +575,8 @@
 }
 
 .canvas-area {
-  flex: 1;
+  width: 100%;
+  aspect-ratio: 1;
   position: relative;
   overflow: hidden;
   /* Grid pattern background for a 'canvas' feel */
@@ -708,8 +699,7 @@
 }
 
 .outfit-details {
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-  padding-top: 2.5rem; /* Taller gradient for better contrast */
+  display: none;
 }
 
 /* --- Toast Notification --- */
@@ -778,12 +768,11 @@
 
 /* --- Outfit Viewer Modal --- */
 .outfit-viewer-modal {
-  max-width: 800px;
-  width: 90%;
-  height: 85vh;
+  max-width: 520px;
+  width: 92%;
   display: flex;
   flex-direction: column;
-  padding: 2rem;
+  padding: 1.25rem;
   overflow: hidden;
 }
 
@@ -850,8 +839,8 @@
 }
 
 .viewer-piece-thumb {
-  width: 80px;
-  height: 100px;
+  width: 64px;
+  height: 64px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -962,7 +951,7 @@
 }
 
 .item-details-image {
-  flex: 1;
+  flex: 1.5;
   background-color: var(--bg-secondary);
   display: flex;
   align-items: center;
@@ -1154,13 +1143,12 @@
   /* Outfit Creator */
   .creator-container {
     flex-direction: column;
-    height: auto;
     gap: 1rem;
+    max-width: 100%;
   }
   .creator-workspace {
     order: -1; /* Put canvas above sidebar */
-    height: 60vh;
-    min-height: 400px;
+    width: 100%;
   }
   .canvas-header {
     flex-direction: row;
@@ -1207,7 +1195,7 @@
   }
   .creator-sidebar {
     width: 100%;
-    height: 250px;
+    max-height: 220px;
   }
   .sidebar-items {
     grid-template-columns: repeat(3, 1fr); /* 3 items per row instead of 2 */
@@ -1218,9 +1206,29 @@
   }
 
   /* Modals */
-  .modal-content, .outfit-viewer-modal {
+  .modal-content {
     padding: 1.5rem;
     width: 95%;
+  }
+  .outfit-viewer-modal {
+    padding: 1rem;
+    width: 95%;
+  }
+
+  /* Item Details Modal */
+  .item-details-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+    width: 95%;
+  }
+
+  .item-details-image {
+    max-height: 60vh;
+    min-height: 200px;
+  }
+
+  .item-details-info {
+    padding: 1.25rem;
   }
   .viewer-header {
     flex-direction: column;
